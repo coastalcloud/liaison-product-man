@@ -1,0 +1,73 @@
+<template>
+
+    <lightning-card
+        title={header}
+        icon-name={iconName}>
+
+        <div slot="actions">
+            <lightning-button label="Refresh" onclick={refreshExistingFiles}></lightning-button>
+            <template if:true={recordId}>
+                <lightning-button label="Create Line Items" onclick={createLineItems}></lightning-button>
+            </template>
+        </div>
+
+        <div style="padding: 1rem;">
+
+            <div class="slds-grid slds-gutters">
+
+                <div class="slds-col">
+                    <lightning-combobox
+                        label="Filter by Family"
+                        name="Family"
+                        onchange={filterData}
+                        options={filterFamilies}
+                    ></lightning-combobox>
+                </div>
+            
+                <div class="slds-col">
+                    <lightning-input
+                        label="Filter by Text"
+                        placeholder="Additionally filter on any data cell, case insensitive..."
+                        name="Any"
+                        onchange={filterData}
+                    ></lightning-input>
+                </div>
+            </div>
+            
+            <br />
+
+            <c-extenda-table
+                key-field="Id"
+                columns={columns}
+                data={viewable_files}
+                sorted-by={sortedBy}
+                default-sort-direction={sortedDirection}
+                sorted-direction={sortedDirection}
+                hide-checkbox-column="true"
+                onpicklist={updateFamily}
+                onsort={updateColumnSorting}
+                onsave={handleSave}
+                onrowaction={managerChanged}>
+            </c-extenda-table>
+            <!-- 
+                show-row-number-column="false"
+                suppress-bottom-bar="true"
+                onheaderaction={handleHeaderAction}
+            -->
+        </div>
+
+        <span slot="footer">
+            <template if:true={showDebug}>
+                <lightning-button label="Debug" onclick={debug}></lightning-button>
+            </template>
+        </span>
+    </lightning-card>
+
+    <!--
+    <br/>
+    <lightning-button
+        label="Debug"
+        onclick={debug}
+    ></lightning-button> 
+    -->
+</template>

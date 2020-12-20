@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+  <types>
+    <name>ApexClass</name>
+    <members>ProductManager</members>
+    <members>ProductManagerTest</members>
+  </types>
+  <types>
+    <name>LightningComponentBundle</name>
+    <members>datatablePicklist</members>
+    <members>extendaTable</members>
+    <members>productManager</members>
+  </types>
+  <types>
+    <name>CustomObject</name>
+    <members>Product2</members>
+  </types>
+  <types>
+    <name>CustomField</name>
+    <members>Product2.Amount__c</members>
+    <members>Product2.Discount__c</members>
+  </types>
+  <types>
+    <name>ListView</name>
+    <members>Product2.AllProducts</members>
+  </types>
+  <version>50.0</version>
+</Package>
