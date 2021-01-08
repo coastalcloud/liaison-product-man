@@ -1,0 +1,45 @@
+<template>
+
+    <lightning-accordion allow-multiple-sections-open onsectiontoggle={handleToggleSection}>
+
+        <template for:each={groups} for:item="group">
+
+            <lightning-accordion-section name={group.value} label={group.label} key={group.key}>
+                
+                <!-- 
+                <lightning-button-menu slot="actions"
+                    alternative-text="Show menu"
+                    icon-size="x-small"
+                    menu-alignment="right">
+                    <lightning-menu-item value="New" label="Menu Item One"></lightning-menu-item>
+                    <lightning-menu-item value="Edit" label="Menu Item Two"></lightning-menu-item>
+                </lightning-button-menu>
+                 -->
+                <lightning-button-group slot="actions">
+                    <lightning-button
+                        name={group.value}
+                        label="Add Selected"
+                        icon-name="utility:add"
+                        icon-position="left"
+                        onclick={addSelected}>
+                   </lightning-button>
+                </lightning-button-group>
+                
+
+                <lightning-datatable
+                    class={group.value}
+                    key-field="Id"
+                    columns={columns}
+                    data={group.records}
+                    onrowaction={rowAction}
+                    sorted-by={sortedBy}
+                    default-sort-direction={sortedDirection}
+                    sorted-direction={sortedDirection}>
+                </lightning-datatable>
+
+            </lightning-accordion-section>
+        </template>
+    </lightning-accordion>
+
+    <button onclick={debug}>debug</button>
+</template>
