@@ -17,10 +17,8 @@ import {
 import Product2 from '@salesforce/schema/Product2'
 import fieldApiName from '@salesforce/schema/Product2.Family'
 
-import getAllProducts from '@salesforce/apex/ProductManager.getAllProducts'
-import updateFamily from '@salesforce/apex/ProductManager.updateFamily'
-import deleteProduct from '@salesforce/apex/ProductManager.deleteProduct'
-import updateProducts from '@salesforce/apex/ProductManager.updateProducts'
+import getOppItems from '@salesforce/apex/ProductManager.getOppItems'
+import addOppItems from '@salesforce/apex/ProductManager.getOppItems'
 
 export default class ProductManager extends LightningElement {
 
@@ -32,7 +30,7 @@ export default class ProductManager extends LightningElement {
     @api recordId
     @api showDebug
 
-    _fields = ['Name', 'Amount__c', 'Discount__c', 'Family', 'LastModifiedDate']
+    _fields = ['Name', 'Family', 'LastModifiedDate']
 
     @track files = []
     @track sortedBy = 'LastModifiedDate'
@@ -92,15 +90,38 @@ export default class ProductManager extends LightningElement {
         }
     })}
 
-    async refreshExistingFiles(){
+    async refreshExistingFiles(data){
 
-        const json = await getAllProducts()
+        const json =  data ? data : await getOppItems({ oppId: this.recordId })
     
         this.existing_files = fieldMap( json )
         
-        this.debug()
+        //this.debug()
     }
 
+    async selected(event){
+        
+        const {
+            name,
+            selected,
+        } = event.detail
+
+        console.log(JSON.parse(JSON.stringify({name,selected})))
+
+        const configs = selected.map(x => ({Id: x.Id, Quantity: x.Quantity}))
+
+        const oppItems = await addOppItems({
+            oppId: this.recordId,
+            configs,
+        })
+
+        console.log(JSON.parse(JSON.stringify({oppItems})))
+
+        this.refreshExistingFiles(oppItems)
+
+        this.toast(`Added ${selected.length} from ${name}`, 'Success', 'success')
+
+    }
     managerChanged(event){
         
         const { 
@@ -138,71 +159,25 @@ export default class ProductManager extends LightningElement {
             this.error(error.message)
         }
     }
-    
-    async updateProducts( prods ) {
-
-        try {
-            
-            const result = await updateProducts({ prods })
-
-            this.refreshExistingFiles()
-
-            this.toast(result, 'Success', 'success')
-        }
-        catch (error) {
-            this.error(error.message)
-        }
-    }
-
-    async updateFamily( event ) {
-
-        try {
-
-            const {
-                type,
-                value,
-                context,
-            } = event.detail
-
-            const result = await updateFamily({ recordId: context, family: value })
-            
-            console.log(result)
-            
-            //this.refreshExistingFiles()
-
-            //this.toast(result, 'Success', 'success')
-        }
-        catch (error) {
-            this.error(error.message)
-        }
-    }
-
-    async deleteProduct( recordId ) {
-
-        try {
-            
-            const result = await deleteProduct({ recordId })
-
-            this.refreshExistingFiles()
-
-            this.toast(result, 'Success', 'success')
-
-        }
-        catch (error) {
-            this.error(error.message)
-        }
-    }
-
 
     updateColumnSorting(event) {
         
         this.sortedBy = event.detail.fieldName;
         this.sortedDirection = event.detail.sortDirection;
 
+        const text_fields = ['Family', 'Name', 'owner']
+        const date_fields = ['modDate']
+
+        const options = {
+            text_fields,
+            date_fields,
+        }
+
         this.viewable_files = sortData(
             this.viewable_files, 
             this.sortedBy, 
-            this.sortedDirection
+            this.sortedDirection,
+            options,
         );
     }
 

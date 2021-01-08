@@ -13,6 +13,22 @@
 
         <div style="padding: 1rem;">
 
+            <c-extenda-table
+                key-field="Id"
+                columns={columns}
+                data={existing_files}
+                sorted-by={sortedBy}
+                default-sort-direction={sortedDirection}
+                sorted-direction={sortedDirection}
+                hide-checkbox-column="true"
+                onpicklist={updateFamily}
+                onsort={updateColumnSorting}
+                onsave={handleSave}
+                onrowaction={managerChanged}>
+            </c-extenda-table>
+
+            <br />
+
             <div class="slds-grid slds-gutters">
 
                 <div class="slds-col">
@@ -33,27 +49,14 @@
                     ></lightning-input>
                 </div>
             </div>
-            
-            <br />
 
-            <c-extenda-table
-                key-field="Id"
-                columns={columns}
-                data={viewable_files}
-                sorted-by={sortedBy}
-                default-sort-direction={sortedDirection}
-                sorted-direction={sortedDirection}
-                hide-checkbox-column="true"
-                onpicklist={updateFamily}
-                onsort={updateColumnSorting}
-                onsave={handleSave}
-                onrowaction={managerChanged}>
-            </c-extenda-table>
-            <!-- 
-                show-row-number-column="false"
-                suppress-bottom-bar="true"
-                onheaderaction={handleHeaderAction}
-            -->
+            <template if:true={families.length}>
+                <c-products
+                    families={families}
+                    onselected={selected}
+                ></c-products>
+            </template>
+
         </div>
 
         <span slot="footer">

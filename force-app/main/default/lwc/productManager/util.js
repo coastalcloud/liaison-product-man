@@ -6,12 +6,17 @@
  */
 export function fieldMap(records){
 
+    console.log(JSON.parse(JSON.stringify(records)));
+
     return records.map(record => {
 
         const object = Object.assign({}, record)
 
-        object.Family = object.Family ? object.Family : ''
-        object.detail_link = `/lightning/r/Product2/${record.Id}/view`
+        object.Product2_Name = object.Product2.Name ? object.Product2.Name : ''
+
+        object.Family = object.Product2.Family ? object.Product2.Family : ''
+        
+        object.detail_link = `/lightning/r/Product2/${object.Product2.Id}/view`
 
         object.modDate = new Date(object.LastModifiedDate).toLocaleString('en-US', { 
             month: 'short',
@@ -34,8 +39,8 @@ export function fieldMap(records){
  */
 export function getColumns(options){
 
-    //console.log('column options')
-    //console.log(options)
+    console.log('column options')
+    console.log(options)
 
     const {
         families,
@@ -60,45 +65,29 @@ function columnMap(families){
     
         'Name': {
             label: 'Name',
-            fieldName: 'Name',
+            fieldName: 'Product2_Name',
             type: 'text',
             sortable: true,
             editable: true,
             hideDefaultActions: true,
         },
-        
-        'Amount__c': {
-            label: 'Amount',
-            fieldName: 'Amount__c',
-            type: 'currency',
-            sortable: true,
-            editable: true,
-        },
 
-        'Discount__c': {
-            label: 'Discount',
-            fieldName: 'Discount__c',
-            type: 'currency',
+        'Quantity': {
+            label: 'Quantity',
+            fieldName: 'Quantity',
+            type: 'number',
             sortable: true,
             editable: true,
+            hideDefaultActions: true,
         },
         
         'Family': {
-            label: 'Family', 
-            fieldName: 'Family', 
-            type: 'picklist', 
+            label: 'Family',
+            fieldName: 'Family',
+            type: 'text',
             sortable: true,
+            editable: false,
             hideDefaultActions: true,
-            typeAttributes: {
-                placeholder: 'Choose Family', 
-                options: families, 
-                value: { 
-                    fieldName: 'Family'
-                }, 
-                context: { 
-                    fieldName: 'Id' 
-                }
-            }
         },
 
         'LastModifiedDate': {
@@ -139,44 +128,66 @@ function columnMap(families){
  * @param {Array} records array of records to sort ([])
  * @param {String} fieldName name of field to sort by (Name)
  * @param {String} sortDirection direction to sort by (asc|desc)
+ * @param {Object} options what to consider during sort; {date_fields}
  * @returns {Array} sorted array
  */
-export function sortData(records, fieldName, sortDirection) {
+export function sortData(records, fieldName, sortDirection, options = {}) {
 
-    //console.log(fieldName)
+    const { date_fields } = options
 
-    const text_fields = ['Family', 'Name', 'owner']
-    const date_fields = ['modDate']
-
-    if(text_fields.includes(fieldName)) {
-
-        if(sortDirection === "desc") {
-            return records.sort((a,b) => 
-                b[fieldName].toUpperCase() < a[fieldName].toUpperCase() 
-                    ? -1
-                    : b[fieldName].toUpperCase() > a[fieldName].toUpperCase() 
-                        ? 1
-                        : 0 //equal
-            );
-        }
-        else if(sortDirection === "asc") {
-            return records.sort((a,b) => 
-                a[fieldName].toUpperCase() < b[fieldName].toUpperCase() 
-                    ? -1
-                    : a[fieldName].toUpperCase() > b[fieldName].toUpperCase() 
-                        ? 1
-                        : 0 //equal
-            );
-        }
-    }
-    else if(date_fields.includes(fieldName)) {
+    if(date_fields.includes(fieldName)) {
         
         if(sortDirection === "desc") {
-            return records.sort((a,b) => new Date(b.LastModifiedDate).getTime() - new Date(a.LastModifiedDate).getTime())
+
+            return records.sort((A,B) => {
+
+                const a = A[fieldName] ? A[fieldName] : 0
+                const b = B[fieldName] ? B[fieldName] : 0
+
+                return new Date(b).getTime() - new Date(a).getTime()
+            })
         }
         else if(sortDirection === "asc") {
-            return records.sort((a,b) => new Date(a.LastModifiedDate).getTime() - new Date(b.LastModifiedDate).getTime())
+
+            return records.sort((A,B) => {
+
+                const a = A[fieldName] ? A[fieldName] : 0
+                const b = B[fieldName] ? B[fieldName] : 0
+
+                return new Date(a).getTime() - new Date(b).getTime()
+            })
         }
+    }
+
+    
+
+    if(sortDirection === "desc") {
+
+        return records.sort((A,B) => {
+
+            const a = A[fieldName] ? A[fieldName] : ''
+            const b = B[fieldName] ? B[fieldName] : ''
+
+            return b.toUpperCase() < a.toUpperCase() 
+                ? -1
+                : b.toUpperCase() > a.toUpperCase() 
+                    ? 1
+                    : 0 //equal
+        });
+    }
+    else if(sortDirection === "asc") {
+
+        return records.sort((A,B) => {
+
+            const a = A[fieldName] ? A[fieldName] : ''
+            const b = B[fieldName] ? B[fieldName] : ''
+
+            return a.toUpperCase() < b.toUpperCase() 
+                ? -1
+                : a.toUpperCase() > b.toUpperCase() 
+                    ? 1
+                    : 0 //equal
+        });
     }
 
     return records
