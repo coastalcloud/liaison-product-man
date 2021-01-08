@@ -1,12 +1,78 @@
 public with sharing class ProductManager {
 
     @AuraEnabled
+    public static List<OpportunityLineItem> getOppItems(String oppId){
+
+        return [
+            SELECT Id, Product2.Id, Product2.Name, Product2.Family, Quantity, ServiceDate, 
+                Discount, TotalPrice, LastModifiedDate
+            FROM OpportunityLineItem 
+            WHERE OpportunityId = :oppId
+            LIMIT 9999
+        ];
+    }
+    
+    /* 
+    ProductManager.addOppItems('006M000000MdpVDIAZ', new List<ProductConfig>{'01t30000002IxK4AAK'});
+ */
+    public class ProductConfig {
+        @AuraEnabled 
+        public String Id;
+        @AuraEnabled 
+        public Integer Quantity;
+    }
+
+    @AuraEnabled
+    public static List<OpportunityLineItem> addOppItems(String oppId, List<ProductConfig> configs){
+
+        List<String> prodIds = new List<String>();
+        for(ProductConfig config : configs){
+            prodIds.add(config.Id);
+        }
+
+        List<OpportunityLineItem> newOppItems = new List<OpportunityLineItem>();
+
+        List<OpportunityLineItem> oldOppItems = [
+            SELECT Id, OpportunityId, Product2Id, Quantity
+            FROM OpportunityLineItem
+            WHERE OpportunityId = :oppId
+            AND Product2Id IN :prodIds
+        ];
+        
+        for(ProductConfig config : configs){
+            Boolean found = false;
+            for(OpportunityLineItem item : oldOppItems){
+                if(config.Id == item.Product2Id){
+                    item.Quantity = item.Quantity + config.Quantity;
+                    newOppItems.add(item);
+                    found = true;
+                    continue;
+                }
+            }
+            if(!found){
+                newOppItems.add(new OpportunityLineItem(
+                    OpportunityId = oppId,
+                    Product2Id = config.Id,
+                    Quantity = config.Quantity
+                ));
+            }
+        }
+        
+        upsert newOppItems;
+
+        System.debug(newOppItems);
+
+        return ProductManager.getOppItems(oppId);
+    }
+
+    @AuraEnabled
     public static List<Product2> getAllProducts(){
 
         return [
-            SELECT Id, Discount__c, Amount__c, Family, Name, LastModifiedDate
+            SELECT Id, Family, Name, LastModifiedDate
             FROM Product2 
             WHERE IsActive = true
+            ORDER BY Family ASC
             LIMIT 9999
         ];
     }
